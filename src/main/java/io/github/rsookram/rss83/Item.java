@@ -137,7 +137,7 @@ public class Item {
     private static Item parseAtom(Node node, String name) {
         String title = "";
         String url = "";
-        String timestamp = "";
+        Instant instant = null;
 
         for (int i = 0; i < node.getChildNodes().getLength(); i++) {
             Node child = node.getChildNodes().item(i);
@@ -153,19 +153,25 @@ public class Item {
                     }
                     break;
                 }
-                case "updated": {
-                    timestamp = child.getTextContent();
+                case "updated":
+                case "published": {
+                    if (instant == null) {
+                        instant = getTimestamp(
+                                child.getTextContent(),
+                                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+                        );
+                    }
                     break;
                 }
             }
         }
 
-        long timestampSeconds = getTimestampSeconds(
-                timestamp,
-                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+        return new Item(
+                name,
+                title,
+                url,
+                instant != null ? instant.getEpochSecond() : getTimestampFallback()
         );
-
-        return new Item(name, title, url, timestampSeconds);
     }
 
     private static Item parseRss(Node node, String name) {
@@ -192,34 +198,41 @@ public class Item {
             }
         }
 
-        long timestampSeconds = getTimestampSeconds(
+        Instant instant = getTimestamp(
                 timestamp,
                 DateTimeFormatter.RFC_1123_DATE_TIME
         );
 
-        return new Item(name, title, url, timestampSeconds);
+        return new Item(
+                name,
+                title,
+                url,
+                instant != null ? instant.getEpochSecond() : getTimestampFallback()
+        );
     }
 
-    private static long getTimestampSeconds(String timestamp, DateTimeFormatter formatter) {
-        long timestampSeconds = OffsetDateTime.now()
-                .withHour(0)
-                .withMinute(0)
-                .toEpochSecond();
+    private static Instant getTimestamp(String timestamp, DateTimeFormatter formatter) {
+        Instant instant = null;
 
         try {
-            Instant timestampInstant = formatter.parse(timestamp, Instant::from);
+            instant = formatter.parse(timestamp, Instant::from);
 
             // Disallow entries from the future
             Instant now = Instant.now();
-            if (timestampInstant.isAfter(now)) {
-                timestampInstant = now;
+            if (instant.isAfter(now)) {
+                instant = now;
             }
-
-            timestampSeconds = timestampInstant.getEpochSecond();
         } catch (DateTimeParseException ignored) {
         }
 
-        return timestampSeconds;
+        return instant;
+    }
+
+    private static long getTimestampFallback() {
+        return OffsetDateTime.now()
+                .withHour(0)
+                .withMinute(0)
+                .toEpochSecond();
     }
 
     private static URL url(String url) {
