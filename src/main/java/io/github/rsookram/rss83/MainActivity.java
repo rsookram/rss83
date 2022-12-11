@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
             JobScheduler jobScheduler = getSystemService(JobScheduler.class);
             jobScheduler.schedule(
                     new JobInfo.Builder(1, new ComponentName(getApplicationContext(), SyncJobService.class))
-                            .setPeriodic(TimeUnit.HOURS.toMillis(6))
+                            .setPeriodic(TimeUnit.HOURS.toMillis(24))
                             .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
                             .setRequiresBatteryNotLow(true)
                             .build()
