@@ -6,11 +6,13 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -47,6 +49,21 @@ public class MainActivity extends Activity {
 
         ListView listView = findViewById(R.id.list);
         listView.setAdapter(new Adapter(this, items));
+
+        applySystemUiVisibility(listView);
+    }
+
+    private void applySystemUiVisibility(View content) {
+        getWindow().setDecorFitsSystemWindows(false);
+
+        content.setOnApplyWindowInsetsListener((v, insets) -> {
+            Insets systemInsets = insets.getInsets(WindowInsets.Type.systemBars());
+            v.setPadding(
+                    systemInsets.left, systemInsets.top, systemInsets.right, systemInsets.bottom
+            );
+
+            return insets;
+        });
     }
 
     private static class Adapter extends ArrayAdapter<Item> {
