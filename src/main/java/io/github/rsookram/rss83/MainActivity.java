@@ -91,6 +91,17 @@ public class MainActivity extends Activity {
                     v.getContext()
                             .startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(item.url)))
             );
+            view.setOnLongClickListener(v -> {
+                Intent intent = Intent.createChooser(
+                        new Intent(Intent.ACTION_SEND)
+                                .putExtra(Intent.EXTRA_TEXT, item.url)
+                                .setType("text/plain")
+                                .putExtra(Intent.EXTRA_TITLE, item.title),
+                        null
+                );
+                v.getContext().startActivity(intent);
+                return true;
+            });
 
             return view;
         }
