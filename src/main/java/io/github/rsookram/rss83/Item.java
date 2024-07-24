@@ -169,7 +169,7 @@ public class Item {
         return new Item(
                 name,
                 title,
-                url,
+                cleanUrl(url),
                 instant != null ? instant.getEpochSecond() : getTimestampFallback()
         );
     }
@@ -206,7 +206,7 @@ public class Item {
         return new Item(
                 name,
                 title,
-                url,
+                cleanUrl(url),
                 instant != null ? instant.getEpochSecond() : getTimestampFallback()
         );
     }
@@ -233,6 +233,20 @@ public class Item {
                 .withHour(0)
                 .withMinute(0)
                 .toEpochSecond();
+    }
+
+    private static String cleanUrl(String rawUrl) {
+        int idx = rawUrl.lastIndexOf('?');
+        if (idx < 0 || idx == rawUrl.length() - 1) {
+            return rawUrl;
+        }
+
+        String[] pairs = rawUrl.substring(idx + 1).split("&");
+        String queryStr = Arrays.stream(pairs)
+                .filter(s -> !s.startsWith("utm_"))
+                .collect(Collectors.joining("&"));
+
+        return rawUrl.substring(0, idx + 1) + queryStr;
     }
 
     private static URL url(String url) {
