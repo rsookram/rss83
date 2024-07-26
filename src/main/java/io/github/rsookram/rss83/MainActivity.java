@@ -22,18 +22,18 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity {
 
-    private static boolean hasSetUpSync = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (savedInstanceState == null) {
+            Item.cleanup(this);
+        }
+
         setContentView(R.layout.main_activity);
 
-        if (!hasSetUpSync) {
-            hasSetUpSync = true;
-
-            JobScheduler jobScheduler = getSystemService(JobScheduler.class);
+        JobScheduler jobScheduler = getSystemService(JobScheduler.class);
+        if (jobScheduler.getPendingJob(1) == null) {
             jobScheduler.schedule(
                     new JobInfo.Builder(1, new ComponentName(getApplicationContext(), SyncJobService.class))
                             .setPeriodic(TimeUnit.HOURS.toMillis(24))
@@ -41,8 +41,6 @@ public class MainActivity extends Activity {
                             .setRequiresBatteryNotLow(true)
                             .build()
             );
-
-            Item.cleanup(this);
         }
 
         List<Item> items = Item.getAll(this);
