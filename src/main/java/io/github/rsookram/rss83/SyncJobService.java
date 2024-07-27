@@ -36,6 +36,11 @@ public class SyncJobService extends JobService {
         return false;
     }
 
+    @Override
+    public void onNetworkChanged(JobParameters params) {
+        // Override to silence log from superclass
+    }
+
     private void sync(JobParameters params) {
         Map<URL, Item> results = new HashMap<>(Item.FEED_URLS.length);
 
